@@ -28,7 +28,7 @@ SUMMARY_PROMPT_TEMPLATE = """
 
 ---
 
-Give a detailed explanation for each section.
+Give a detailed summary for each section.
 """
 
 def main():
@@ -58,7 +58,7 @@ def query_rag(query_text: str):
     prompt = prompt_template.format(context=context_text, question=query_text)
     # print(prompt)
 
-    model = Ollama(model="mistral")
+    model = Ollama(model="llama3.1")
     response_text = model.invoke(prompt)
 
     sources = [doc.metadata.get("id", None) for doc, _score in results]
@@ -85,7 +85,7 @@ def summarize_database():
     prompt = prompt_template.format(context=context_text)
 
     # Summarize using the model
-    model = Ollama(model="mistral")
+    model = Ollama(model="llama3.1")
     response_text = model.invoke(prompt)
 
     # Print the summary
