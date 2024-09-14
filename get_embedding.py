@@ -1,8 +1,7 @@
-import api_key
-GOOGLE_API_KEY = api_key.GOOGLE_API_KEY
+from langchain_community.embeddings.ollama import OllamaEmbeddings
+from langchain_community.embeddings.bedrock import BedrockEmbeddings
 
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 def get_embedding_function():
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004", google_api_key=GOOGLE_API_KEY)
+    embeddings = OllamaEmbeddings(model="nomic-embed-text")
     return embeddings

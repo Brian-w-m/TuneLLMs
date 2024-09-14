@@ -2,6 +2,7 @@ import argparse
 from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 import google.generativeai as genai
+from langchain_community.llms.ollama import Ollama
 
 from get_embedding import get_embedding_function
 import api_key
@@ -57,8 +58,8 @@ def query_rag(query_text: str):
     prompt = prompt_template.format(context=context_text, question=query_text)
     # print(prompt)
 
-    model = genai.GenerativeModel("gemini-1.5-flash")
-    response_text = model.generate_content(prompt)
+    model = Ollama(model="mistral")
+    response_text = model.invoke(prompt)
 
     sources = [doc.metadata.get("id", None) for doc, _score in results]
     formatted_response = f"Response: {response_text}\nSources: {sources}"
@@ -84,12 +85,12 @@ def summarize_database():
     prompt = prompt_template.format(context=context_text)
 
     # Summarize using the model
-    model = genai.GenerativeModel("gemini-1.5-flash")
-    response_text = model.generate_content(prompt)
+    model = Ollama(model="mistral")
+    response_text = model.invoke(prompt)
 
     # Print the summary
-    print(response_text.text)
-    return response_text.text
+    print(response_text)
+    return response_text
 
 
 
