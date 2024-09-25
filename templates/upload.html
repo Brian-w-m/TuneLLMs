@@ -129,6 +129,69 @@
         .file-list form {
             display: inline;
         }
+
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+
+        .file-upload input[type="file"] {
+            margin-bottom: 10px;
+        }
+
+        .file-upload input[type="submit"] {
+            display: block;
+        }
+
+        /* New styling for the query form */
+        .query-form-container {
+            position: fixed;
+            left: 420px;
+            width: calc(100% - 125px);
+            height: 75px;
+            padding-top: 40px;
+            bottom: 30px;
+            display: flex;
+            align-items: center;
+            transition: left 0.3s ease, width 0.3s ease;
+        }
+
+        .query-form-container.expanded {
+            left: 293px;
+        }
+
+        #query-form {
+            width: 60%;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #query-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #query-btn {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: #0b7dda;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #query-btn:hover {
+            background-color: #005bb5;
+        }
     </style>
 </head>
 <body>
@@ -143,13 +206,19 @@
 
     <div class="sidebar" id="sidebar">
         <h2>Uploaded Files</h2>
+
+        <form method="POST" action="/" enctype="multipart/form-data" class="file-upload">
+            <input type="file" name="file">
+            <input type="submit" name="upload" value="Upload">
+        </form>
+
         {% if files %}
             <ul class="file-list">
             {% for file in files %}
                 <li>
                     {{ file }}
                     <form method="POST" action="{{ url_for('delete_file', filename=file) }}" style="display:inline;">
-                        <button type="submit">Delete</button>
+                        <button type="submit" name="delete">Delete</button>
                     </form>
                 </li>
             {% endfor %}
@@ -160,31 +229,16 @@
     </div>
 
     <div class="content" id="content">
-        <h1>Upload a File</h1>
-
-        <form method="POST" action="/" enctype="multipart/form-data">
-            <input type="file" name="file">
-            <input type="submit" value="Upload">
-        </form>
-
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <ul>
-            {% for message in messages %}
-              <li>
-                <p>{{ message }}</p>
-              </li>
-            {% endfor %}
-            </ul>
-          {% endif %}
-        {% endwith %}
+        <h2>Query Result</h2>
+        <div id="query-result">
+            {% if query_result %}
+                {% for line in query_result %}
+                    <p>{{ line|safe }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
 
         <button id="summarize-btn">Summarize</button>
-
-        <h3>Don't really need this</h3>
-        <form method="POST" action="{{ url_for('reset') }}">
-            <button type="submit">Reset Database</button>
-        </form>
 
         <h2>Summarized Notes</h2>
         <div id="summary-result">
@@ -193,6 +247,12 @@
                     <p>{{ line|safe }}</p>
                 {% endfor %}
             {% endif %}
+        </div>
+        <div class="query-form-container">
+            <form id="query-form">
+                <input type="text" id="query-input" name="text" placeholder="Enter your query..." required>
+                <button type="button" id="query-btn">Query</button>
+            </form>
         </div>
     </div>
 
@@ -203,11 +263,13 @@
             var content = document.getElementById('content');
             var header = document.getElementById('header');
             var toggleBtn = document.querySelector('.toggle-btn');
+            var querycont = document.querySelector('.query-form-container');
 
             sidebar.classList.toggle('hidden');
             content.classList.toggle('expanded');
             header.classList.toggle('expanded');
             toggleBtn.classList.toggle('active');
+            querycont.classList.toggle('expanded');
         }
 
         // AJAX for summarize button
@@ -224,6 +286,34 @@
                 },
                 error: function() {
                     alert("Error summarizing notes.");
+                }
+            });
+        });
+
+        document.getElementById('query-btn').addEventListener('click', function() {
+            // Get the value from the input field
+            var inputText = document.getElementById('query-input').value;
+
+            // Check if input is empty
+            if (!inputText) {
+                alert("Please enter a query.");
+                return;
+            }
+
+            // Send AJAX POST request with the input value
+            $.ajax({
+                type: "POST",
+                url: "/query_rag",
+                data: { text: inputText },  // Pass the input text to the server
+                success: function(response) {
+                    var queryResult = document.getElementById('query-result');
+                    queryResult.innerHTML = '';  // Clear previous results
+                    response.result.forEach(function(line) {
+                        queryResult.innerHTML += `<p>${line}</p>`;  // Append each line of the result
+                    });
+                },
+                error: function() {
+                    alert("Error querying notes.");
                 }
             });
         });

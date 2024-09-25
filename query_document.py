@@ -61,9 +61,9 @@ def query_rag(query_text: str):
     response_text = model.generate_content(prompt)
 
     sources = [doc.metadata.get("id", None) for doc, _score in results]
-    formatted_response = f"Response: {response_text}\nSources: {sources}"
-    print(response_text.text)
-    return response_text
+    formatted_response = f"Response: {response_text.text}\nSources: {sources}"
+    print(formatted_response)
+    return formatted_response
 
 def summarize_database():
     # Load the Chroma DB
