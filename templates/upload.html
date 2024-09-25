@@ -149,7 +149,7 @@
                 <li>
                     {{ file }}
                     <form method="POST" action="{{ url_for('delete_file', filename=file) }}" style="display:inline;">
-                        <button type="submit">Delete</button>
+                        <button type="submit" name="delete">Delete</button>
                     </form>
                 </li>
             {% endfor %}
@@ -164,7 +164,7 @@
 
         <form method="POST" action="/" enctype="multipart/form-data">
             <input type="file" name="file">
-            <input type="submit" value="Upload">
+            <input type="submit" name="upload" value="Upload">
         </form>
 
         {% with messages = get_flashed_messages() %}
@@ -179,12 +179,27 @@
           {% endif %}
         {% endwith %}
 
-        <button id="summarize-btn">Summarize</button>
+        <h2>Query</h2>
+        <form id="query-form">
+            <input type="text" id="query-input" name="text" required>
+            <button type="button" id="query-btn">Query</button>
+        </form>
 
-        <h3>Don't really need this</h3>
+        <h2>Query Result</h2>
+        <div id="query-result">
+            {% if query_result %}
+                {% for line in query_result %}
+                    <p>{{ line|safe }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- <h3>Don't really need this</h3>
         <form method="POST" action="{{ url_for('reset') }}">
             <button type="submit">Reset Database</button>
-        </form>
+        </form> -->
+
+        <button id="summarize-btn">Summarize</button>
 
         <h2>Summarized Notes</h2>
         <div id="summary-result">
@@ -224,6 +239,34 @@
                 },
                 error: function() {
                     alert("Error summarizing notes.");
+                }
+            });
+        });
+
+        document.getElementById('query-btn').addEventListener('click', function() {
+            // Get the value from the input field
+            var inputText = document.getElementById('query-input').value;
+
+            // Check if input is empty
+            if (!inputText) {
+                alert("Please enter a query.");
+                return;
+            }
+
+            // Send AJAX POST request with the input value
+            $.ajax({
+                type: "POST",
+                url: "/query_rag",
+                data: { text: inputText },  // Pass the input text to the server
+                success: function(response) {
+                    var queryResult = document.getElementById('query-result');
+                    queryResult.innerHTML = '';  // Clear previous results
+                    response.result.forEach(function(line) {
+                        queryResult.innerHTML += `<p>${line}</p>`;  // Append each line of the result
+                    });
+                },
+                error: function() {
+                    alert("Error querying notes.");
                 }
             });
         });

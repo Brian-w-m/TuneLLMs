@@ -63,7 +63,7 @@ def query_rag(query_text: str):
 
     sources = [doc.metadata.get("id", None) for doc, _score in results]
     formatted_response = f"Response: {response_text}\nSources: {sources}"
-    print(response_text.text)
+    print(response_text)
     return response_text
 
 def summarize_database():

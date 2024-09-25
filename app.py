@@ -1,5 +1,5 @@
 from flask import Flask, request, redirect, url_for, render_template, flash, jsonify
-from query_document import summarize_database
+from query_document import summarize_database, query_rag
 import document_loader
 import os
 import re
@@ -19,7 +19,7 @@ def allowed_file(filename):
 @app.route('/', methods=['GET', 'POST'])
 def upload_and_list_files():
     result = request.args.get('result', None)
-    if request.method == 'POST':
+    if request.method == 'POST' and "upload" in request.form:
         # Handle file upload
         if 'file' not in request.files:
             flash('No file part')
@@ -85,7 +85,15 @@ def summarize():
 @app.route('/reset', methods=['POST'])
 def reset():
     document_loader.main(True)
-    return redirect(url_for('upload_and_list_files'))
+    return redirect(url_for('upload_and_list_files')) 
+
+@app.route('/query_rag', methods=['POST'])
+def query_rag():
+    query_text = request.form.get('text')
+    # Process the query_text using your RAG model or function
+    result = ["This is a mock result.", "Result line 2 based on query: " + query_text]
+
+    return jsonify({'result': result})
 
 if __name__ == "__main__":
     app.run(debug=True)
